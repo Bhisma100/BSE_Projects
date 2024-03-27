@@ -4,6 +4,11 @@ import pandas as pd
 from bs4 import BeautifulSoup as bs
 import datetime
 import time
+import os
+import hashlib
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 print('************** BSE Listing Batch *******************')
 while True:
@@ -31,30 +36,98 @@ while True:
             Data = page.json()['Table']
             print(">>> Data Fetched.")
 
-            # Connecting to GoogleSheet
-            gc = gspread.service_account(filename=r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Exchange Related task\NSE_Projtects\creds.json')
+            #Connecting to GoogleSheet
+            gc = gspread.service_account(filename=r'C:\Users\Ashish Pal\Desktop\PrevousLapData\Ashish\Python\Exchange Related task\BSE_Projects\creds.json')
             spreadsheet_name = 'Notifications and Listings'
             sheet_name = 'BSE_Listing'
             sh = gc.open(spreadsheet_name).worksheet(sheet_name)
             print(">>> Connected to Sheet")
 
-            existing_data_range = sh.range('A2:L' + str(sh.row_count))
-            for cell in existing_data_range:
-                cell.value = ''
+            # existing_data_range = sh.range('A2:L' + str(sh.row_count))
+            # for cell in existing_data_range:
+            #     cell.value = ''
 
-            sh.update_cells(existing_data_range)
-            print(">>> Existing data has been Deleted ")
+            # sh.update_cells(existing_data_range)
+            # print(">>> Existing data has been Deleted ")
 
             df = pd.DataFrame(Data)
-            print(df)
-            values_lists = []
-            df_dict = df.to_dict(orient='records')
-            print(f">>> Number Rows to be Updated are: {len(df_dict)}")
-            for data in df_dict:
-                values_lists.append([str(data['NEWS_DT']),str(data['SCRIP_CD']), str(data['SLONGNAME']), str(data['NSURL']),str(data['SUBCATNAME'])])
-            sh.append_row([f'Batch ran at: {datetime.datetime.now()}'])
-            sh.append_rows(values_lists)
-            print(f">>> New BSE Listing has been updated in the Sheet, Rows = {len(values_lists)}")
+            BSE_Listing = df[['NEWS_DT','SCRIP_CD','NEWSSUB','SLONGNAME','NSURL','SUBCATNAME']]
+            print(BSE_Listing)
+            New_listingNew = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_Listing1.csv'
+            if os.path.exists(New_listingNew):
+                os.remove(New_listingNew)
+            New_listingOld = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_Listing2.csv'
+            BSE_Listing.to_csv(New_listingNew,index=False)
+            hash_new = hashlib.sha256(open(New_listingNew,'rb').read()).hexdigest()
+            with open(New_listingNew,'rb') as file:
+                hash_new = hashlib.sha256(file.read()).hexdigest()
+                file.close()
+            hash_old = None
+            if os.path.exists(New_listingOld):
+                with open(New_listingOld,'rb') as f:
+                    hash_old = hashlib.sha256(f.read()).hexdigest()
+                    f.close()
+                if hash_new != hash_old:
+                    os.remove(New_listingOld)
+                    os.rename(New_listingNew,New_listingOld)
+
+                    existing_data_range = sh.range('A2:L' + str(sh.row_count))
+                    for cell in existing_data_range:
+                        cell.value = ''
+
+                    sh.update_cells(existing_data_range)
+                    print(">>> Existing data has been Deleted ")
+
+                    values_lists = []
+                    FormateDate = [i[:10] for i in BSE_Listing.loc[:,'NEWS_DT']]
+                    BSE_Listing['NEWS_DT'] = FormateDate
+                    BSE_Listing.loc[:,'NEWS_DT'] = pd.to_datetime(BSE_Listing['NEWS_DT'])
+                    df_dict = BSE_Listing.to_dict(orient='records')
+                    print(f">>> Number Rows to be Updated are: {len(df_dict)}")
+                    for data in df_dict:
+                        values_lists.append([data['NEWS_DT'].strftime('%Y-%m-%d'),str(data['SCRIP_CD']), str(data['SLONGNAME']), str(data['NSURL']),str(data['SUBCATNAME'])])
+                    sh.append_row([f'Batch ran at: {datetime.datetime.now()}'])
+                    sh.append_rows(values_lists,value_input_option='USER_ENTERED')
+                    print(f">>> New BSE Listing has been updated in the Sheet, Rows = {len(values_lists)}")
+
+                    html_table = "<div style='text-align: center;'><h2>BSE Listing</h2></div>" + BSE_Listing.to_html(index=False)
+
+                    # Step 3: Compose Email
+                    sender_email = 'ashishkumar@valueresearch.in'
+                    receiver_emails = ['ashishkumar@valueresearch.in', 'karonanand@valueresearch.in', 'ravikant@valueresearch.in','adityagupta@valueresearch.in']
+                    password = 'znpy jilp wquu ewmq'
+
+                    msg = MIMEMultipart('alternative')
+                    msg['From'] = sender_email
+                    msg['To'] = ', '.join(receiver_emails)
+                    msg['Subject'] = 'BSE New Listing'
+
+                    # Step 4: Attach HTML Tables
+                    msg.attach(MIMEText(html_table, 'html'))
+
+                    # Step 5: Send Email
+                    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                        server.login(sender_email, password)
+                        server.sendmail(sender_email, receiver_emails, msg.as_string())
+
+                    print("Email sent successfully!")
+                    time.sleep(5)
+                else:
+                    os.remove(New_listingNew)
+                    print('>>> No New Listing ******')
+            else:
+                os.rename(New_listingNew,New_listingOld)
+            # values_lists = []
+            # FormateDate = [i[:10] for i in FromPc_df.loc[:,'NEWS_DT']]
+            # FromPc_df['NEWS_DT'] = FormateDate
+            # FromPc_df.loc[:,'NEWS_DT'] = pd.to_datetime(FromPc_df['NEWS_DT'])
+            # df_dict = FromPc_df.to_dict(orient='records')
+            # print(f">>> Number Rows to be Updated are: {len(df_dict)}")
+            # for data in df_dict:
+            #     values_lists.append([data['NEWS_DT'].strftime('%Y-%m-%d'),str(data['SCRIP_CD']), str(data['SLONGNAME']), str(data['NSURL']),str(data['SUBCATNAME'])])
+            # sh.append_row([f'Batch ran at: {datetime.datetime.now()}'])
+            # sh.append_rows(values_lists,value_input_option='USER_ENTERED')
+            # print(f">>> New BSE Listing has been updated in the Sheet, Rows = {len(values_lists)}")
             time.sleep(5)
 
             break

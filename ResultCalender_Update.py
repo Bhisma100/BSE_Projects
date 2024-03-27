@@ -46,7 +46,7 @@ if 'table' in  source:
     df = pd.DataFrame(MainDf,columns = Column)
 
     # Connecting to the Sheet
-    gc = gspread.service_account(filename=r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Exchange Related task\NSE_Projtects\creds.json')
+    gc = gspread.service_account(filename=r'C:\Users\Ashish Pal\Desktop\PrevousLapData\Ashish\Python\Exchange Related task\BSE_Projects\creds.json')
     spreadsheet_name = 'QuarterlyResultsTracker'
     sheet_name = 'Result calendar'
     sh = gc.open(spreadsheet_name).worksheet(sheet_name)
