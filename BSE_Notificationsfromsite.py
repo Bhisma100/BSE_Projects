@@ -13,7 +13,15 @@ import datetime
 print("*********************BSE Notification Batch *******************")
 while True:
     try:
+<<<<<<< Updated upstream:BSE_Notificationsfromsite.py
         driver= webdriver.Chrome()
+=======
+        # chrome_options = Options()
+        # chrome_options.add_argument('--headless')
+        # chrome_options.add_argument('"User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"')
+        # driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome()
+>>>>>>> Stashed changes:BSE_NotificationsNew.py
         url = 'https://www.bseindia.com/markets/MarketInfo/NoticesCirculars.aspx?id=0&txtscripcd=&pagecont=&subject='
         driver.get(url)
         time.sleep(1)
@@ -57,11 +65,19 @@ while True:
                     
         for i in range(2,len(PageNo)):
             element = wait.until(EC.element_to_be_clickable((By.XPATH, f"//a[text()='{i}']")))
+<<<<<<< Updated upstream:BSE_Notificationsfromsite.py
             time.sleep(2)
+=======
+            time.sleep(1)
+>>>>>>> Stashed changes:BSE_NotificationsNew.py
             driver.execute_script("arguments[0].scrollIntoView();", element)
             time.sleep(3)
             driver.execute_script("arguments[0].click();", element)
+<<<<<<< Updated upstream:BSE_Notificationsfromsite.py
             time.sleep(2)
+=======
+            time.sleep(1)
+>>>>>>> Stashed changes:BSE_NotificationsNew.py
             r = driver.page_source
             soup = bs(r,'html.parser')
             Table = soup.find('table',{'id':'ContentPlaceHolder1_GridView2'})
@@ -95,10 +111,14 @@ while True:
 
 
         values_lists = []
+<<<<<<< Updated upstream:BSE_Notificationsfromsite.py
         FormateDate = [i[:8] for i in Filtered_df.loc[:,'Date']]
         Filtered_df.loc[:,'Date'] = FormateDate
         Filtered_df.loc[:,'Date'] = pd.to_datetime(Filtered_df['Date']) 
         print(Filtered_df)
+=======
+        
+>>>>>>> Stashed changes:BSE_NotificationsNew.py
         df_dict = Filtered_df.to_dict(orient='records')
         print(f">>> Number Rows to be Updated are: {len(df_dict)}")
         for data in df_dict:

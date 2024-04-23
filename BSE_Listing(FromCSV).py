@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup as bs
 import os
+import json
 import gspread
 import pandas as pd
 import time
@@ -59,11 +60,11 @@ while True and MaxRetry <= 10:
         From_Date = (datetime.datetime.now()-datetime.timedelta(days=7)).strftime('%Y%m%d')
         To_Date = datetime.datetime.now().strftime('%Y%m%d')
         # Rename and move the downloaded file to the desired location
-        downloaded_file_name = 'NotificationBSE.csv'  # Change this to your desired file name
-        downloaded_file_path = os.path.join('C:\\Users\\Ashish Pal\\Desktop', downloaded_file_name)  # Change the path to your desired location
+        downloaded_file_name = 'NotificationBSE.csv'  
+        downloaded_file_path = os.path.join(r"C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings", downloaded_file_name)
          
         # Check if the file exists in the default download directory
-        default_download_file_path = f'C:\\Users\\Ashish Pal\\Downloads\\Notices & Circulars_{From_Date}_{To_Date}.csv'  # Change this to the actual file path
+        default_download_file_path = rf"C:\Users\Ashish Kumar Pal\Downloads\Notices & Circulars_{From_Date}_{To_Date}.csv" 
         if os.path.exists(default_download_file_path):
             if os.path.exists(downloaded_file_path):
                 # Delete the existing file in the new download location
@@ -87,26 +88,26 @@ while True and MaxRetry <= 10:
         # print(filtered_df)
         # filtered_df1 = df[df['Subject'].str.contains('Change in|New ISIN|CHANGE IN')]
         # print(filtered_df1)
-        gc = gspread.service_account(filename=r'C:\Users\Ashish Pal\Desktop\PrevousLapData\Ashish\Python\Exchange Related task\BSE_Projects\creds.json')
+        gc = gspread.service_account(filename=r"C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Keys and Passwords\GoogleCloud(Key)\creds.json")
         spreadsheet_name = 'Notifications and Listings'
         sheet_name = 'BSE_Forthcoming_listing'
         sh = gc.open(spreadsheet_name).worksheet(sheet_name)
         print(">>> Connected to Sheet")
 
         BSE_FortListing = df[df['Subject'].str.contains('Listing of Equity|Listing of Units|Sovereign Gold Bonds')]
-        Forth_pathNew = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_FortListing1.csv'
+        Forth_pathNew = r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings\BSE_FortListing1.csv'
         if os.path.exists(Forth_pathNew):
             os.remove(Forth_pathNew)
-        Forth_pathOld = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_FortListing2.csv'
+        Forth_pathOld = r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings\BSE_FortListing2.csv'
         BSE_FortListing.to_csv(Forth_pathNew,index=False)
         hash_new = hashlib.sha256(open(Forth_pathNew, 'rb').read()).hexdigest()
         hash_old = None
 
         BSE_Changes = df[df['Subject'].str.contains('Change in|New ISIN|CHANGE IN')]
-        ChangesPathNew = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_Changes1.csv'
+        ChangesPathNew = r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings\BSE_Changes1.csv'
         if os.path.exists(ChangesPathNew):
             os.remove(ChangesPathNew)
-        ChangesPathold = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_Changes2.csv'
+        ChangesPathold = r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings\BSE_Changes2.csv'
         BSE_Changes.to_csv(ChangesPathNew,index=False)
         hash_newc = hashlib.sha256(open(ChangesPathNew, 'rb').read()).hexdigest()
         hash_oldc = None
@@ -153,9 +154,11 @@ while True and MaxRetry <= 10:
                     html_table2 = "<div style='text-align: center;'><h2>BSE Changes in Securities</h2></div>" + BSE_Changes.to_html(index=False)
 
                     # Step 3: Compose Email
-                    sender_email = 'ashishkumar@valueresearch.in'
-                    receiver_emails = ['ashishkumar@valueresearch.in', 'karonanand@valueresearch.in', 'ravikant@valueresearch.in','adityagupta@valueresearch.in']
-                    password = 'znpy jilp wquu ewmq'
+                    with open(r"C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Keys and Passwords\EmailandPassword\EmailCreds.json") as config_file:
+                        config = json.load(config_file)
+                    sender_email = config['email_username']
+                    receiver_emails = config['email recievers']
+                    password = config['email_password']
 
                     msg = MIMEMultipart('alternative')
                     msg['From'] = sender_email

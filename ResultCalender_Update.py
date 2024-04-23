@@ -46,7 +46,7 @@ if 'table' in  source:
     df = pd.DataFrame(MainDf,columns = Column)
 
     # Connecting to the Sheet
-    gc = gspread.service_account(filename=r'C:\Users\Ashish Pal\Desktop\PrevousLapData\Ashish\Python\Exchange Related task\BSE_Projects\creds.json')
+    gc = gspread.service_account(filename=r"C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Keys and Passwords\GoogleCloud(Key)\creds.json")
     spreadsheet_name = 'QuarterlyResultsTracker'
     sheet_name = 'Result calendar'
     sh = gc.open(spreadsheet_name).worksheet(sheet_name)
@@ -60,11 +60,13 @@ if 'table' in  source:
     sh.update_cells(existing_data_range)
     print(">>> Exsiting Data has been Deleted from the sheet")
 
+
+    df['Result Date'] = pd.to_datetime(df['Result Date'])
     Data_Dict = df.to_dict(orient='records')
     for data in Data_Dict:
-        values_lists.append([int(data['Security Code']), str(data['Security Name']), str(data['Result Date'])])
+        values_lists.append([int(data['Security Code']), str(data['Security Name']),data['Result Date'].strftime('%Y-%m-%d')])
     sh.append_row([f'Batch ran at: {datetime.datetime.now()}'])
-    sh.append_rows(values_lists)
+    sh.append_rows(values_lists,value_input_option='USER_ENTERED')
     print(">>> New Data has been Added to the sheet")
     time.sleep(2)
 

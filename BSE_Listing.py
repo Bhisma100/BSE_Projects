@@ -9,6 +9,7 @@ import hashlib
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import json
 
 print('************** BSE Listing Batch *******************')
 while True:
@@ -37,7 +38,7 @@ while True:
             print(">>> Data Fetched.")
 
             #Connecting to GoogleSheet
-            gc = gspread.service_account(filename=r'C:\Users\Ashish Pal\Desktop\PrevousLapData\Ashish\Python\Exchange Related task\BSE_Projects\creds.json')
+            gc = gspread.service_account(filename=r"C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Keys and Passwords\GoogleCloud(Key)\creds.json")
             spreadsheet_name = 'Notifications and Listings'
             sheet_name = 'BSE_Listing'
             sh = gc.open(spreadsheet_name).worksheet(sheet_name)
@@ -53,10 +54,10 @@ while True:
             df = pd.DataFrame(Data)
             BSE_Listing = df[['NEWS_DT','SCRIP_CD','NEWSSUB','SLONGNAME','NSURL','SUBCATNAME']]
             print(BSE_Listing)
-            New_listingNew = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_Listing1.csv'
+            New_listingNew = r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings\BSE_Listing1.csv'
             if os.path.exists(New_listingNew):
                 os.remove(New_listingNew)
-            New_listingOld = r'C:\Users\Ashish Pal\Desktop\Notifications and Listings\BSE_Listing2.csv'
+            New_listingOld = r'C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Notifications and Listings\BSE_Listing2.csv'
             BSE_Listing.to_csv(New_listingNew,index=False)
             hash_new = hashlib.sha256(open(New_listingNew,'rb').read()).hexdigest()
             with open(New_listingNew,'rb') as file:
@@ -93,9 +94,11 @@ while True:
                     html_table = "<div style='text-align: center;'><h2>BSE Listing</h2></div>" + BSE_Listing.to_html(index=False)
 
                     # Step 3: Compose Email
-                    sender_email = 'ashishkumar@valueresearch.in'
-                    receiver_emails = ['ashishkumar@valueresearch.in', 'karonanand@valueresearch.in', 'ravikant@valueresearch.in','adityagupta@valueresearch.in']
-                    password = 'znpy jilp wquu ewmq'
+                    with open(r"C:\Users\Ashish Kumar Pal\OneDrive\Desktop\Python\Keys and Passwords\EmailandPassword\EmailCreds.json") as config_file:
+                       config = json.load(config_file)
+                    sender_email = config['email_username']
+                    receiver_emails = config['email recievers']
+                    password = config['email_password']
 
                     msg = MIMEMultipart('alternative')
                     msg['From'] = sender_email
